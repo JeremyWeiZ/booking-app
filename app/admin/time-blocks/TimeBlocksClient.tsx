@@ -16,12 +16,15 @@ interface TimeBlock {
 interface Staff {
   id: string
   name: string
+  isDefault?: boolean
 }
 
 const DEFAULT_FORM = { name: '', durationMins: 60, color: '#818cf8', isActive: true }
 
 export default function TimeBlocksClient() {
-  const [staffList, setStaffList] = useState<Staff[]>([])
+  const [allStaff, setAllStaff] = useState<Staff[]>([])
+  const staffList = allStaff.filter((s) => !s.isDefault)
+  const defaultStaff = allStaff.find((s) => s.isDefault)
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [blocks, setBlocks] = useState<TimeBlock[]>([])
   const [editingBlock, setEditingBlock] = useState<TimeBlock | null>(null)
@@ -34,8 +37,9 @@ export default function TimeBlocksClient() {
     fetch('/api/admin/staff', { credentials: 'include' })
       .then((r) => r.json())
       .then((data: Staff[]) => {
-        setStaffList(data)
-        if (data.length > 0) setSelectedStaffId(data[0].id)
+        setAllStaff(data)
+        const firstReal = data.find((s) => !s.isDefault)
+        if (firstReal) setSelectedStaffId(firstReal.id)
       })
       .catch(console.error)
   }, [])
@@ -119,6 +123,26 @@ export default function TimeBlocksClient() {
     }
   }
 
+  const handleRestoreDefaults = async () => {
+    if (!selectedStaffId) return
+    if (!confirm('将用默认服务项目覆盖当前员工，确认继续？')) return
+
+    const res = await fetch(`/api/admin/staff/${selectedStaffId}/restore-time-blocks`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+
+    if (!res.ok) {
+      addToast('恢复默认失败', 'error')
+      return
+    }
+
+    const refreshed = await fetch(`/api/admin/time-blocks?staffId=${selectedStaffId}`, { credentials: 'include' })
+    const data = await refreshed.json()
+    setBlocks(data)
+    addToast('已恢复默认服务项目', 'success')
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
@@ -140,6 +164,17 @@ export default function TimeBlocksClient() {
               {s.name}
             </button>
           ))}
+        </div>
+      )}
+
+      {!allStaff.find((s) => s.id === selectedStaffId)?.isDefault && defaultStaff && (
+        <div className="flex justify-end mb-3">
+          <button
+            onClick={handleRestoreDefaults}
+            className="text-sm text-indigo-600 border border-indigo-200 px-4 py-2 rounded-xl hover:bg-indigo-50"
+          >
+            ↺ 恢复默认服务项目
+          </button>
         </div>
       )}
 

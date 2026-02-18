@@ -9,13 +9,15 @@ export const TILE_BASE_HEIGHT = TILE_MIN_SLOT_HEIGHT * 4  // 80px for a 60-min t
 // Compact tray tile sizing
 export const TRAY_TILE_SLOT_HEIGHT = 14  // roughly half of full-size
 export const TRAY_TILE_MIN_HEIGHT = 32
+export const TRAY_TILE_MAX_HEIGHT = (120 / 15) * TRAY_TILE_SLOT_HEIGHT // cap tray tiles at 2h visual height
 
 export function getTileHeightPx(durationMins: number): number {
   return Math.max(SLOT_HEIGHT, (durationMins / 15) * TILE_MIN_SLOT_HEIGHT)
 }
 
 export function getTrayTileHeightPx(durationMins: number): number {
-  return Math.max(TRAY_TILE_MIN_HEIGHT, (durationMins / 15) * TRAY_TILE_SLOT_HEIGHT)
+  const raw = (durationMins / 15) * TRAY_TILE_SLOT_HEIGHT
+  return Math.min(TRAY_TILE_MAX_HEIGHT, Math.max(TRAY_TILE_MIN_HEIGHT, raw))
 }
 
 export function getAppointmentHeightPx(durationMins: number): number {

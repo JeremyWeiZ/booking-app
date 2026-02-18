@@ -18,16 +18,30 @@ interface GameTileProps {
   isDimmed?: boolean
 }
 
+function getTextColor(bgColor: string): string {
+  const hex = bgColor.replace('#', '')
+  if (hex.length !== 6) return '#111827'
+  const r = parseInt(hex.slice(0, 2), 16)
+  const g = parseInt(hex.slice(2, 4), 16)
+  const b = parseInt(hex.slice(4, 6), 16)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.65 ? '#111827' : '#ffffff'
+}
+
 function TileBody({
   block,
   height,
   slotHeight,
+  isOverlay,
 }: {
   block: TimeBlockData
   height: number
   slotHeight: number
+  isOverlay: boolean
 }) {
   const hourDividerCount = Math.floor(block.durationMins / 60) - 1
+  const isCompactShort = !isOverlay && block.durationMins <= 30
+  const textColor = getTextColor(block.color)
   const dividerPositions = Array.from(
     { length: Math.max(0, hourDividerCount) },
     (_, i) => (i + 1) * 4 * slotHeight // every 60min
@@ -38,22 +52,34 @@ function TileBody({
       className="relative rounded-xl overflow-hidden flex-shrink-0 shadow-md select-none"
       style={{ height, width: 80, backgroundColor: block.color }}
     >
-      {/* Glossy top sheen */}
-      <div className="absolute inset-x-0 top-0 h-1/3 bg-white/20 rounded-t-xl" />
-
       {/* Hour dividers (for 2h+ tiles) */}
       {dividerPositions.map((pos) => (
         <div
           key={pos}
-          className="absolute left-0 right-0 border-t-2 border-white/40"
+          className="absolute left-0 right-0 border-t border-white/30"
           style={{ top: pos }}
         />
       ))}
 
-      {/* Name at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-black/25">
-        <p className="text-white text-[11px] font-semibold truncate leading-tight">{block.name}</p>
-        <p className="text-white/80 text-[10px]">{block.durationMins}min</p>
+      {/* Label */}
+      <div
+        className={cn(
+          'absolute inset-0 px-2',
+          isCompactShort ? 'flex flex-col items-center justify-center text-center' : 'flex flex-col justify-end pb-1.5'
+        )}
+      >
+        <p
+          className="text-[11px] font-semibold truncate leading-tight"
+          style={{ color: textColor }}
+        >
+          {block.name}
+        </p>
+        <p
+          className="text-[10px] leading-tight"
+          style={{ color: textColor, opacity: 0.92 }}
+        >
+          {block.durationMins}min
+        </p>
       </div>
     </div>
   )
@@ -73,7 +99,7 @@ export default function GameTile({ block, isOverlay, isDimmed }: GameTileProps) 
     : { touchAction: 'none' }
 
   if (isOverlay) {
-    return <TileBody block={block} height={height} slotHeight={slotHeight} />
+    return <TileBody block={block} height={height} slotHeight={slotHeight} isOverlay />
   }
 
   return (
@@ -87,7 +113,7 @@ export default function GameTile({ block, isOverlay, isDimmed }: GameTileProps) 
         (isDragging || isDimmed) ? 'opacity-30' : 'opacity-100'
       )}
     >
-      <TileBody block={block} height={height} slotHeight={slotHeight} />
+      <TileBody block={block} height={height} slotHeight={slotHeight} isOverlay={false} />
     </div>
   )
 }

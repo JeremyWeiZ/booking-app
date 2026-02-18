@@ -103,7 +103,7 @@ export default function SettingsClient() {
   // Load staff settings
   useEffect(() => {
     if (!selectedStaffId) return
-    const staff = staffList.find((s) => s.id === selectedStaffId)
+    const staff = allStaff.find((s) => s.id === selectedStaffId)
     if (staff?.settings) {
       setSettings({
         timezone: staff.settings.timezone,
@@ -116,11 +116,19 @@ export default function SettingsClient() {
       })
     }
 
-    fetch(`/api/admin/schedule-rules?staffId=${selectedStaffId}`, { credentials: 'include' })
+    const controller = new AbortController()
+    fetch(`/api/admin/schedule-rules?staffId=${selectedStaffId}`, {
+      credentials: 'include',
+      signal: controller.signal,
+    })
       .then((r) => r.json())
       .then(setRules)
-      .catch(console.error)
-  }, [selectedStaffId, staffList])
+      .catch((err) => {
+        if (err?.name !== 'AbortError') console.error(err)
+      })
+
+    return () => controller.abort()
+  }, [selectedStaffId, allStaff])
 
   const handleSaveStudio = async () => {
     setIsSavingStudio(true)

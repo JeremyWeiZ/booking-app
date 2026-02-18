@@ -60,6 +60,14 @@ interface Appointment {
   staffId: string
 }
 
+interface SlotQuarter {
+  date: string
+  hour: number
+  quarter: number
+  slotType: 'AVAILABLE' | 'PENDING_CONFIRM' | 'UNAVAILABLE' | 'BOOKED'
+  cellId: string
+}
+
 // ---------- Appointment block (draggable) ----------
 function AppointmentBlock({
   appointment,
@@ -139,6 +147,7 @@ function DropCell({ date, hour }: { date: string; hour: number }) {
 // ---------- Day column with absolute appointment blocks ----------
 function DayColumn({
   date,
+  slots,
   appointments,
   calendarStartHour,
   calendarEndHour,
@@ -147,6 +156,7 @@ function DayColumn({
   isDraggingAppt,
 }: {
   date: string
+  slots: SlotQuarter[]
   appointments: Appointment[]
   calendarStartHour: number
   calendarEndHour: number
@@ -159,9 +169,30 @@ function DayColumn({
     { length: calendarEndHour - calendarStartHour },
     (_, i) => calendarStartHour + i
   )
+  const totalQuarters = (calendarEndHour - calendarStartHour) * 4
+  const slotMap = new Map(slots.map((s) => [s.cellId, s]))
 
   return (
     <div className="relative border-r border-gray-100" style={{ height: totalHeight }}>
+      {/* 15-min availability background */}
+      {Array.from({ length: totalQuarters }, (_, idx) => {
+        const hour = calendarStartHour + Math.floor(idx / 4)
+        const quarter = idx % 4
+        const cellId = makeCellId(date, hour, quarter)
+        const slotType = slotMap.get(cellId)?.slotType ?? 'UNAVAILABLE'
+        return (
+          <div
+            key={cellId}
+            className={cn(
+              'absolute inset-x-0',
+              quarter === 0 ? 'border-t border-gray-200' : quarter === 2 ? 'border-t border-gray-100' : 'border-t border-gray-50',
+              slotType === 'UNAVAILABLE' ? 'bg-gray-100' : 'bg-white'
+            )}
+            style={{ top: idx * SLOT_HEIGHT, height: SLOT_HEIGHT }}
+          />
+        )
+      })}
+
       {/* Hour grid rows (droppable) */}
       {isDraggingAppt &&
         hours.map((hour) => (
@@ -169,15 +200,6 @@ function DayColumn({
             <DropCell date={date} hour={hour} />
           </div>
         ))}
-
-      {/* Background grid lines */}
-      {hours.map((hour) => (
-        <div
-          key={hour}
-          className="absolute inset-x-0 border-b border-gray-100"
-          style={{ top: (hour - calendarStartHour) * HOUR_HEIGHT, height: HOUR_HEIGHT }}
-        />
-      ))}
 
       {/* Appointment blocks */}
       {appointments
@@ -212,6 +234,7 @@ export default function AdminCalendarClient() {
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([])
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [slots, setSlots] = useState<SlotQuarter[]>([])
   const [weekStart, setWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 })
   )
@@ -243,6 +266,15 @@ export default function AdminCalendarClient() {
       .then((r) => r.json()).then(setTimeBlocks).catch(console.error)
   }, [selectedStaffId])
 
+  useEffect(() => {
+    if (!selectedStaffId) return
+    const weekStartStr = format(weekStart, 'yyyy-MM-dd')
+    fetch(`/api/slots?staffId=${selectedStaffId}&weekStart=${weekStartStr}`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then(setSlots)
+      .catch(console.error)
+  }, [selectedStaffId, weekStart])
+
   const loadAppointments = useCallback(async () => {
     if (!selectedStaffId) return
     const start = weekStart.toISOString()
@@ -268,6 +300,7 @@ export default function AdminCalendarClient() {
     appointments.filter(
       (a) => format(toZonedTime(new Date(a.startTime), timezone), 'yyyy-MM-dd') === dateStr
     )
+  const getSlotsByDate = (dateStr: string) => slots.filter((s) => s.date === dateStr)
 
   const handleDragStart = (_e: DragStartEvent) => setIsDraggingAppt(true)
 
@@ -405,6 +438,7 @@ export default function AdminCalendarClient() {
                     <DayColumn
                       key={dayIdx}
                       date={dateStr}
+                      slots={getSlotsByDate(dateStr)}
                       appointments={getApptsByDate(dateStr)}
                       calendarStartHour={calendarStartHour}
                       calendarEndHour={calendarEndHour}

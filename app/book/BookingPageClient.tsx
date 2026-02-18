@@ -447,7 +447,7 @@ export default function BookingPageClient() {
           {/* Grid body */}
           <div
             className="flex-1 overflow-y-auto overflow-x-hidden relative"
-            style={{ paddingBottom: `min(${trayHeight + 8}px, 34dvh)` }}
+            style={{ paddingBottom: `min(${trayHeight + 8}px, 29dvh)` }}
           >
             {isLoadingSlots && (
               <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
