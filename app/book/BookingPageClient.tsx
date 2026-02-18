@@ -172,11 +172,11 @@ export default function BookingPageClient() {
   )
 
   useEffect(() => {
-    fetch('/api/studio').then((r) => r.json()).then(setStudio).catch(console.error)
+    fetch('/api/studio', { cache: 'no-store' }).then((r) => r.json()).then(setStudio).catch(console.error)
   }, [])
 
   useEffect(() => {
-    fetch('/api/staff')
+    fetch('/api/staff', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data: StaffData[]) => {
         setStaffList(data)
@@ -201,7 +201,7 @@ export default function BookingPageClient() {
 
   useEffect(() => {
     if (!selectedStaffId) return
-    fetch(`/api/time-blocks?staffId=${selectedStaffId}`)
+    fetch(`/api/time-blocks?staffId=${selectedStaffId}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then(setTimeBlocks)
       .catch(console.error)
@@ -211,7 +211,7 @@ export default function BookingPageClient() {
     if (!selectedStaffId) return
     setIsLoadingSlots(true)
     const weekStartStr = format(weekStart, 'yyyy-MM-dd')
-    fetch(`/api/slots?staffId=${selectedStaffId}&weekStart=${weekStartStr}`)
+    fetch(`/api/slots?staffId=${selectedStaffId}&weekStart=${weekStartStr}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => { setSlots(data); setIsLoadingSlots(false) })
       .catch(() => setIsLoadingSlots(false))
@@ -373,7 +373,7 @@ export default function BookingPageClient() {
     setStep(data.status === 'CONFIRMED' ? 'success' : 'pending')
 
     // Refresh slots
-    fetch(`/api/slots?staffId=${selectedStaffId}&weekStart=${format(weekStart, 'yyyy-MM-dd')}`)
+    fetch(`/api/slots?staffId=${selectedStaffId}&weekStart=${format(weekStart, 'yyyy-MM-dd')}`, { cache: 'no-store' })
       .then((r) => r.json()).then(setSlots).catch(console.error)
   }
 
