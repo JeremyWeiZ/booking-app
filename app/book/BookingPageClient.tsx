@@ -81,6 +81,9 @@ function QuarterCell({
   isHighlightValid,
   isHourStart,
   isHalfHour,
+  isBookedStart,
+  isBookedEnd,
+  showBookedLabel,
 }: {
   cellId: string
   slotType: SlotQuarter['slotType']
@@ -89,6 +92,9 @@ function QuarterCell({
   isHighlightValid: boolean
   isHourStart: boolean
   isHalfHour: boolean
+  isBookedStart: boolean
+  isBookedEnd: boolean
+  showBookedLabel: boolean
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: cellId,
@@ -107,7 +113,10 @@ function QuarterCell({
         !isHourStart && !isHalfHour && 'border-t border-gray-50',
         slotType === 'AVAILABLE' && !isHighlighted && 'bg-white',
         slotType === 'PENDING_CONFIRM' && !isHighlighted && 'bg-yellow-50',
-        (slotType === 'UNAVAILABLE' || slotType === 'BOOKED') && 'bg-gray-100',
+        slotType === 'UNAVAILABLE' && 'bg-gray-100',
+        slotType === 'BOOKED' && !isHighlighted && 'bg-gray-200/60',
+        slotType === 'BOOKED' && isBookedStart && 'rounded-t-md',
+        slotType === 'BOOKED' && isBookedEnd && 'rounded-b-md',
         isHighlighted && isHighlightValid && 'bg-green-50',
         isHighlighted && !isHighlightValid && 'bg-red-50',
         isOver && canDrop && isHighlightValid && 'ring-1 ring-green-400',
@@ -122,10 +131,10 @@ function QuarterCell({
           )}
         />
       )}
-      {slotType === 'BOOKED' && isHourStart && (
-        <div className="absolute inset-x-0.5 top-0.5 rounded-sm bg-gray-300/50 flex items-center justify-center" style={{ height: SLOT_HEIGHT * 4 - 4 }}>
-          <span className="text-[10px] text-gray-500 font-medium">已约</span>
-        </div>
+      {slotType === 'BOOKED' && showBookedLabel && (
+        <span className="absolute left-1 top-0.5 text-[10px] text-gray-600 font-medium">
+          已约
+        </span>
       )}
     </div>
   )
@@ -473,7 +482,13 @@ export default function BookingPageClient() {
                 {days.map((day, dayIdx) => {
                   const dateStr = format(day, 'yyyy-MM-dd')
                   return (
-                    <div key={dayIdx} className="flex flex-col">
+                    <div
+                      key={dayIdx}
+                      className={cn(
+                        'flex flex-col',
+                        dayIdx < 6 && 'border-r border-dashed border-gray-300'
+                      )}
+                    >
                       {Array.from(
                         { length: (calendarEndHour - calendarStartHour) * 4 },
                         (_, idx) => {
@@ -482,6 +497,24 @@ export default function BookingPageClient() {
                           const cellId = makeCellId(dateStr, hour, quarter)
                           const slot = slotMap.get(cellId)
                           const slotType = slot?.slotType ?? 'UNAVAILABLE'
+                          const prevCellId = idx > 0
+                            ? makeCellId(
+                                dateStr,
+                                calendarStartHour + Math.floor((idx - 1) / 4),
+                                (idx - 1) % 4
+                              )
+                            : null
+                          const nextCellId = idx < (calendarEndHour - calendarStartHour) * 4 - 1
+                            ? makeCellId(
+                                dateStr,
+                                calendarStartHour + Math.floor((idx + 1) / 4),
+                                (idx + 1) % 4
+                              )
+                            : null
+                          const prevIsBooked = prevCellId ? slotMap.get(prevCellId)?.slotType === 'BOOKED' : false
+                          const nextIsBooked = nextCellId ? slotMap.get(nextCellId)?.slotType === 'BOOKED' : false
+                          const isBookedStart = slotType === 'BOOKED' && !prevIsBooked
+                          const isBookedEnd = slotType === 'BOOKED' && !nextIsBooked
                           const canDrop =
                             !!draggingBlock && validDropCells.has(cellId)
                           return (
@@ -494,6 +527,9 @@ export default function BookingPageClient() {
                               isHighlightValid={highlightInfo.valid}
                               isHourStart={quarter === 0}
                               isHalfHour={quarter === 2}
+                              isBookedStart={isBookedStart}
+                              isBookedEnd={isBookedEnd}
+                              showBookedLabel={isBookedStart}
                             />
                           )
                         }
@@ -511,7 +547,7 @@ export default function BookingPageClient() {
           {draggingBlock && (
             <div className="flex flex-col items-center gap-1 pointer-events-none">
               {overlayTimeLabel && (
-                <div className="bg-indigo-700 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg">
+                <div className="bg-indigo-700 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg -translate-y-2">
                   {overlayTimeLabel}
                 </div>
               )}

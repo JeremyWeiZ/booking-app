@@ -421,8 +421,8 @@ export default function AdminCalendarClient() {
             />
           </div>
 
-          <div className="overflow-auto">
-            <div className="flex min-w-[600px]">
+          <div className="overflow-y-auto overflow-x-hidden">
+            <div className="flex w-full min-w-0">
               {/* Time column */}
               <TimeColumn
                 startHour={calendarStartHour}

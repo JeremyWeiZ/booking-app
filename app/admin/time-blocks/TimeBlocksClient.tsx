@@ -39,7 +39,9 @@ export default function TimeBlocksClient() {
       .then((data: Staff[]) => {
         setAllStaff(data)
         const firstReal = data.find((s) => !s.isDefault)
+        const fallbackDefault = data.find((s) => s.isDefault)
         if (firstReal) setSelectedStaffId(firstReal.id)
+        else if (fallbackDefault) setSelectedStaffId(fallbackDefault.id)
       })
       .catch(console.error)
   }, [])
@@ -148,24 +150,35 @@ export default function TimeBlocksClient() {
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
 
       {/* Staff tabs */}
-      {staffList.length > 1 && (
-        <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-none">
-          {staffList.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setSelectedStaffId(s.id)}
-              className={cn(
-                'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap',
-                selectedStaffId === s.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white border border-gray-200 text-gray-700'
-              )}
-            >
-              {s.name}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-none flex-wrap">
+        {defaultStaff && (
+          <button
+            onClick={() => setSelectedStaffId(defaultStaff.id)}
+            className={cn(
+              'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap border-2 border-dashed',
+              selectedStaffId === defaultStaff.id
+                ? 'bg-indigo-600 text-white border-indigo-600'
+                : 'bg-white border-indigo-200 text-indigo-700'
+            )}
+          >
+            ⚙ 默认设置
+          </button>
+        )}
+        {staffList.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setSelectedStaffId(s.id)}
+            className={cn(
+              'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap',
+              selectedStaffId === s.id
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white border border-gray-200 text-gray-700'
+            )}
+          >
+            {s.name}
+          </button>
+        ))}
+      </div>
 
       {!allStaff.find((s) => s.id === selectedStaffId)?.isDefault && defaultStaff && (
         <div className="flex justify-end mb-3">

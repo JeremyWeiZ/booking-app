@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
 
   const blocks = await prisma.timeBlock.findMany({
     where: { staffId, isActive: true },
-    orderBy: { name: 'asc' },
+    orderBy: [{ durationMins: 'asc' }, { name: 'asc' }],
   })
 
   return NextResponse.json(blocks)

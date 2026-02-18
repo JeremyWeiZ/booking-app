@@ -5,7 +5,8 @@ import { prisma } from '@/lib/prisma'
 
 /**
  * POST /api/admin/staff/:id/restore-defaults
- * Copies settings and time blocks from the default staff to the given staff.
+ * Copies staff settings and schedule rules from the default staff
+ * to the given staff (no time block changes).
  */
 export async function POST(
   _req: NextRequest,
@@ -16,7 +17,7 @@ export async function POST(
 
   const defaultStaff = await prisma.staff.findFirst({
     where: { isDefault: true },
-    include: { settings: true, timeBlocks: true },
+    include: { settings: true, scheduleRules: true },
   })
 
   if (!defaultStaff) {
@@ -36,21 +37,17 @@ export async function POST(
     })
   }
 
-  // Copy time blocks (deactivate existing, create new ones from defaults)
-  await prisma.timeBlock.updateMany({
-    where: { staffId: params.id },
-    data: { isActive: false },
-  })
-
-  for (const tb of defaultStaff.timeBlocks.filter((t) => t.isActive)) {
-    await prisma.timeBlock.create({
-      data: {
+  // Replace schedule rules from default staff
+  await prisma.scheduleRule.deleteMany({ where: { staffId: params.id } })
+  if (defaultStaff.scheduleRules.length > 0) {
+    await prisma.scheduleRule.createMany({
+      data: defaultStaff.scheduleRules.map((rule) => ({
         staffId: params.id,
-        name: tb.name,
-        durationMins: tb.durationMins,
-        color: tb.color,
-        isActive: true,
-      },
+        dayOfWeek: rule.dayOfWeek,
+        startTime: rule.startTime,
+        endTime: rule.endTime,
+        slotType: rule.slotType,
+      })),
     })
   }
 

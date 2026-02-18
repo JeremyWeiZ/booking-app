@@ -209,7 +209,7 @@ export default function SettingsClient() {
   }
 
   const handleRestoreDefaults = async () => {
-    if (!confirm('将从"默认设置"恢复该员工的设置和服务项目，确认继续？')) return
+    if (!confirm('将从"默认设置"恢复该员工的时区/缓冲/截止日期/日历时间与排班规则，确认继续？')) return
     const res = await fetch(`/api/admin/staff/${selectedStaffId}/restore-defaults`, {
       method: 'POST',
       credentials: 'include',

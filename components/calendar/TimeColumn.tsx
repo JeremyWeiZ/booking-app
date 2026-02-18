@@ -11,7 +11,7 @@ export default function TimeColumn({ startHour, endHour, timezone }: TimeColumnP
   const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i)
 
   return (
-    <div className="flex flex-col w-12 flex-shrink-0">
+    <div className="flex flex-col w-8 sm:w-12 flex-shrink-0">
       {hours.map((hour) => (
         <div
           key={hour}
@@ -19,7 +19,7 @@ export default function TimeColumn({ startHour, endHour, timezone }: TimeColumnP
           style={{ height: HOUR_HEIGHT }}
         >
           {hour % 2 === 0 ? (
-            <span className="absolute top-0 right-2 text-[10px] text-gray-400 leading-none pt-0.5">
+            <span className="absolute top-0 right-1 sm:right-2 text-[9px] sm:text-[10px] text-gray-400 leading-none pt-0.5">
               {formatHourLabelInTimezone(hour, timezone)}
             </span>
           ) : null}

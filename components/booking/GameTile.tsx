@@ -18,16 +18,6 @@ interface GameTileProps {
   isDimmed?: boolean
 }
 
-function getTextColor(bgColor: string): string {
-  const hex = bgColor.replace('#', '')
-  if (hex.length !== 6) return '#111827'
-  const r = parseInt(hex.slice(0, 2), 16)
-  const g = parseInt(hex.slice(2, 4), 16)
-  const b = parseInt(hex.slice(4, 6), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.65 ? '#111827' : '#ffffff'
-}
-
 function TileBody({
   block,
   height,
@@ -41,7 +31,6 @@ function TileBody({
 }) {
   const hourDividerCount = Math.floor(block.durationMins / 60) - 1
   const isCompactShort = !isOverlay && block.durationMins <= 30
-  const textColor = getTextColor(block.color)
   const dividerPositions = Array.from(
     { length: Math.max(0, hourDividerCount) },
     (_, i) => (i + 1) * 4 * slotHeight // every 60min
@@ -70,13 +59,13 @@ function TileBody({
       >
         <p
           className="text-[11px] font-semibold truncate leading-tight"
-          style={{ color: textColor }}
+          style={{ color: '#ffffff' }}
         >
           {block.name}
         </p>
         <p
           className="text-[10px] leading-tight"
-          style={{ color: textColor, opacity: 0.92 }}
+          style={{ color: 'rgba(255, 255, 255, 0.92)' }}
         >
           {block.durationMins}min
         </p>

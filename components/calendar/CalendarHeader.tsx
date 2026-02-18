@@ -33,7 +33,7 @@ export default function CalendarHeader({
   return (
     <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
       {/* Week navigation row */}
-      <div className="flex items-center justify-between px-3 py-2">
+      <div className="flex items-center justify-between px-3 py-2 gap-2">
         <button
           onClick={onPrevWeek}
           className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
@@ -44,7 +44,7 @@ export default function CalendarHeader({
 
         <button
           onClick={() => setShowMiniCal(!showMiniCal)}
-          className="text-sm font-medium text-gray-800 hover:text-indigo-600 transition-colors"
+          className="text-xs sm:text-sm font-medium text-gray-800 hover:text-indigo-600 transition-colors truncate"
         >
           {headerLabel}
         </button>
@@ -59,7 +59,7 @@ export default function CalendarHeader({
       </div>
 
       {/* Day headers */}
-      <div className="grid grid-cols-[48px_repeat(7,1fr)] border-t border-gray-100">
+      <div className="grid grid-cols-[32px_repeat(7,1fr)] sm:grid-cols-[48px_repeat(7,1fr)] border-t border-gray-100">
         <div /> {/* Time column spacer */}
         {days.map((day, i) => {
           const isToday = day.getTime() === today.getTime()
@@ -71,7 +71,7 @@ export default function CalendarHeader({
               <span className="text-gray-500">{DAY_LABELS[i]}</span>
               <span
                 className={cn(
-                  'w-7 h-7 flex items-center justify-center rounded-full font-medium mt-0.5',
+                  'w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full font-medium mt-0.5',
                   isToday
                     ? 'bg-indigo-600 text-white'
                     : 'text-gray-700'
