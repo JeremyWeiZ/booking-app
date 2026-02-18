@@ -398,9 +398,16 @@ export default function BookingPageClient() {
   if (staffList.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen gap-4 text-center px-8">
-        <div className="text-4xl">📅</div>
-        <h1 className="text-lg font-semibold text-gray-800">暂未配置服务人员</h1>
-        <p className="text-sm text-gray-500">请联系店铺配置后再访问</p>
+        {studio?.logoUrl ? (
+          <img src={studio.logoUrl} alt="Store Logo" className="w-16 h-16 rounded-2xl object-cover border border-gray-200" />
+        ) : (
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-500">
+            Store Logo
+          </div>
+        )}
+        <h1 className="text-lg font-semibold text-gray-800">{studio?.name ?? 'Store Name'}</h1>
+        <p className="text-sm text-gray-600">你负责闪耀，我负责为你定制光芒。精致生活，从一副为你而做的美甲开始。</p>
+        <p className="text-sm text-gray-500">加载中，请稍后</p>
       </div>
     )
   }
