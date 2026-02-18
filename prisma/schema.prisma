@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Studio {
+  id         String  @id @default(cuid())
+  name       String
+  logoUrl    String?
+  brandColor String? @default("#6366f1")
+  staffs     Staff[]
+}
+
+model Staff {
+  id            String         @id @default(cuid())
+  studioId      String
+  name          String
+  avatarUrl     String?
+  isActive      Boolean        @default(true)
+  isDefault     Boolean        @default(false)
+  studio        Studio         @relation(fields: [studioId], references: [id])
+  settings      StaffSettings?
+  scheduleRules ScheduleRule[]
+  appointments  Appointment[]
+  timeBlocks    TimeBlock[]
+  bookingTokens BookingToken[]
+}
+
+model StaffSettings {
+  id                String    @id @default(cuid())
+  staffId           String    @unique
+  timezone          String    @default("Asia/Shanghai")
+  bookingInterval   Int       @default(15)
+  bufferMinutes     Int       @default(0)
+  openUntil         DateTime?
+  calendarStartHour Int       @default(8)
+  calendarEndHour   Int       @default(22)
+  staff             Staff     @relation(fields: [staffId], references: [id])
+}
+
+model ScheduleRule {
+  id        String   @id @default(cuid())
+  staffId   String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  slotType  SlotType
+  staff     Staff    @relation(fields: [staffId], references: [id])
+}
+
+model TimeBlock {
+  id           String        @id @default(cuid())
+  staffId      String
+  name         String
+  durationMins Int
+  color        String        @default("#818cf8")
+  isActive     Boolean       @default(true)
+  staff         Staff          @relation(fields: [staffId], references: [id])
+  appointments  Appointment[]
+  bookingTokens BookingToken[]
+}
+
+model Appointment {
+  id           String            @id @default(cuid())
+  staffId      String
+  timeBlockId  String
+  clientName   String
+  phone        String?
+  email        String?
+  wechat       String?
+  startTime    DateTime
+  endTime      DateTime
+  status       AppointmentStatus @default(PENDING)
+  notes        String?
+  bookingToken String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  staff        Staff             @relation(fields: [staffId], references: [id])
+  timeBlock    TimeBlock         @relation(fields: [timeBlockId], references: [id])
+}
+
+model BookingToken {
+  id          String     @id @default(cuid())
+  token       String     @unique @default(cuid())
+  staffId     String?
+  timeBlockId String?
+  clientName  String?
+  phone       String?
+  email       String?
+  wechat      String?
+  expiresAt   DateTime?
+  usedAt      DateTime?
+  staff       Staff?     @relation(fields: [staffId], references: [id])
+  timeBlock   TimeBlock? @relation(fields: [timeBlockId], references: [id])
+  createdAt   DateTime   @default(now())
+}
+
+model AdminUser {
+  id           String @id @default(cuid())
+  username     String @unique
+  passwordHash String
+}
+
+enum SlotType {
+  AVAILABLE
+  PENDING_CONFIRM
+  UNAVAILABLE
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  PENDING
+  CANCELLED
+}
