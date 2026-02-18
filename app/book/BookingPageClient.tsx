@@ -418,10 +418,24 @@ export default function BookingPageClient() {
 
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 flex-shrink-0">
-        {studio?.logoUrl && (
-          <img src={studio.logoUrl} alt="logo" className="h-8 w-8 rounded-lg object-cover" />
-        )}
-        <h1 className="font-semibold text-gray-900">{studio?.name ?? '预约平台'}</h1>
+        <div className="flex items-center gap-3 min-w-0">
+          {studio?.logoUrl && (
+            <img src={studio.logoUrl} alt="logo" className="h-8 w-8 rounded-lg object-cover" />
+          )}
+          <h1 className="font-semibold text-gray-900 truncate">{studio?.name ?? '预约平台'}</h1>
+        </div>
+        <div className="ml-auto text-[11px] text-gray-500 whitespace-nowrap">
+          由{' '}
+          <a
+            href="https://www.jwsoft.com.au"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
+          >
+            JW Soft
+          </a>{' '}
+          提供服务
+        </div>
       </div>
 
       {/* Staff selector */}
