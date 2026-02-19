@@ -32,6 +32,9 @@ function TileBody({
 }) {
   const hourDividerCount = Math.floor(block.durationMins / 60) - 1
   const isCompactShort = !isOverlay && block.durationMins <= 30
+  const estimatedNameLines = Math.max(1, Math.min(4, Math.ceil(block.name.length / 8)))
+  const textDrivenMinHeight = 18 + estimatedNameLines * 13 + 16
+  const trayAdaptiveHeight = Math.max(height, textDrivenMinHeight)
   const dividerPositions = Array.from(
     { length: Math.max(0, hourDividerCount) },
     (_, i) => (i + 1) * 4 * slotHeight // every 60min
@@ -40,7 +43,7 @@ function TileBody({
   return (
     <div
       className="relative rounded-xl overflow-hidden flex-shrink-0 shadow-md select-none"
-      style={{ height, width: 80, backgroundColor: block.color }}
+      style={{ height: isOverlay ? height : trayAdaptiveHeight, width: 80, backgroundColor: block.color }}
     >
       {/* Hour dividers (for 2h+ tiles) */}
       {dividerPositions.map((pos) => (
@@ -55,11 +58,18 @@ function TileBody({
       <div
         className={cn(
           'absolute inset-0 px-2',
-          isCompactShort ? 'flex flex-col items-center justify-center text-center' : 'flex flex-col justify-end pb-1.5'
+          isOverlay
+            ? 'flex flex-col justify-end pb-1.5'
+            : isCompactShort
+              ? 'flex flex-col items-center justify-center text-center'
+              : 'flex flex-col justify-end pb-1.5'
         )}
       >
         <p
-          className="text-[11px] font-semibold truncate leading-tight"
+          className={cn(
+            'text-[11px] font-semibold leading-tight',
+            isOverlay ? 'truncate' : 'whitespace-normal break-words'
+          )}
           style={{ color: '#ffffff' }}
         >
           {block.name}

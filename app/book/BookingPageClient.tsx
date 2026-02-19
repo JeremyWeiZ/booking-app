@@ -511,7 +511,7 @@ export default function BookingPageClient() {
 
       {/* Legend */}
       <div className="bg-white border-b border-gray-100 px-4 py-2 flex-shrink-0">
-        <Legend />
+        <Legend lang={lang} />
       </div>
 
       <DndContext
@@ -625,7 +625,7 @@ export default function BookingPageClient() {
           {draggingBlock && (
             <div className="flex flex-col items-center gap-1 pointer-events-none">
               {overlayTimeLabel && (
-                <div className="bg-indigo-700 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg -translate-y-2">
+                <div className="bg-indigo-700 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg -translate-y-20">
                   {overlayTimeLabel}
                 </div>
               )}
@@ -639,6 +639,7 @@ export default function BookingPageClient() {
           blocks={displayedBlocks}
           draggingBlockId={draggingBlock ? `block-${draggingBlock.id}` : null}
           isCollapsed={!!draggingBlock}
+          lang={lang}
         />
       </DndContext>
 
