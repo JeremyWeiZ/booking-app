@@ -52,6 +52,7 @@ export default function LinksClient() {
   })
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { toasts, addToast, dismiss } = useToast()
 
   useEffect(() => {
@@ -117,6 +118,24 @@ export default function LinksClient() {
   const copyUrl = (url: string) => {
     navigator.clipboard.writeText(url)
     addToast('链接已复制', 'success')
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('确认删除该预约链接？')) return
+    setDeletingId(id)
+    const res = await fetch(`/api/admin/tokens/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+    setDeletingId(null)
+
+    if (!res.ok) {
+      addToast('删除失败', 'error')
+      return
+    }
+
+    setTokens((prev) => prev.filter((t) => t.id !== id))
+    addToast('已删除', 'success')
   }
 
   return (
@@ -279,12 +298,21 @@ export default function LinksClient() {
                         {t.usedAt ? ' · 已使用' : ' · 未使用'}
                       </p>
                     </div>
-                    <button
-                      onClick={() => copyUrl(url)}
-                      className="text-indigo-600 text-xs font-medium whitespace-nowrap"
-                    >
-                      复制
-                    </button>
+                    <div className="flex items-center gap-3 whitespace-nowrap">
+                      <button
+                        onClick={() => copyUrl(url)}
+                        className="text-indigo-600 text-xs font-medium"
+                      >
+                        复制
+                      </button>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        disabled={deletingId === t.id}
+                        className="text-red-500 text-xs font-medium disabled:text-gray-400"
+                      >
+                        {deletingId === t.id ? '删除中...' : '删除'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )
