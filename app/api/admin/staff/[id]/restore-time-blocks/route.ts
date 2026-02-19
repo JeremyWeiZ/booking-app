@@ -36,6 +36,7 @@ export async function POST(
       data: {
         staffId: params.id,
         name: tb.name,
+        nameEn: tb.nameEn,
         durationMins: tb.durationMins,
         color: tb.color,
         isActive: true,

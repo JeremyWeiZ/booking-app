@@ -20,6 +20,7 @@ interface BookingFormProps {
   onSubmit: (data: BookingFormData) => Promise<void>
   onBack: () => void
   isSubmitting: boolean
+  lang?: 'zh' | 'en'
 }
 
 export default function BookingForm({
@@ -32,7 +33,9 @@ export default function BookingForm({
   onSubmit,
   onBack,
   isSubmitting,
+  lang = 'zh',
 }: BookingFormProps) {
+  const isEn = lang === 'en'
   const [form, setForm] = useState<BookingFormData>({
     clientName: initialData?.clientName ?? '',
     phone: initialData?.phone ?? '',
@@ -42,7 +45,7 @@ export default function BookingForm({
   const [errors, setErrors] = useState<Partial<BookingFormData>>({})
 
   const formatDateTime = (iso: string) => {
-    return new Date(iso).toLocaleString('zh-CN', {
+    return new Date(iso).toLocaleString(isEn ? 'en-AU' : 'zh-CN', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -53,9 +56,9 @@ export default function BookingForm({
 
   const validate = (): boolean => {
     const errs: Partial<BookingFormData> = {}
-    if (!form.clientName.trim()) errs.clientName = '姓名必填'
+    if (!form.clientName.trim()) errs.clientName = isEn ? 'Name is required' : '姓名必填'
     if (!form.phone && !form.email && !form.wechat) {
-      errs.phone = '请至少填写一种联系方式'
+      errs.phone = isEn ? 'Please provide at least one contact method' : '请至少填写一种联系方式'
     }
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -97,34 +100,34 @@ export default function BookingForm({
       {/* Summary */}
       <div className="bg-indigo-50 rounded-xl p-4 mb-4 text-sm">
         <div className="flex justify-between mb-1">
-          <span className="text-gray-500">技师</span>
+          <span className="text-gray-500">{isEn ? 'Staff' : '技师'}</span>
           <span className="font-medium">{staffName}</span>
         </div>
         <div className="flex justify-between mb-1">
-          <span className="text-gray-500">时间</span>
+          <span className="text-gray-500">{isEn ? 'Time' : '时间'}</span>
           <span className="font-medium">
-            {formatDateTime(startTime)} – {new Date(endTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            {formatDateTime(startTime)} – {new Date(endTime).toLocaleTimeString(isEn ? 'en-AU' : 'zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">服务</span>
+          <span className="text-gray-500">{isEn ? 'Service' : '服务'}</span>
           <span className="font-medium">{serviceName} {durationMins}min</span>
         </div>
       </div>
 
       {/* Fields */}
       <div className="flex flex-col gap-4 flex-1">
-        {field('姓名', 'clientName', true)}
-        {field('手机号', 'phone', false, 'tel')}
+        {field(isEn ? 'Name' : '姓名', 'clientName', true)}
+        {field(isEn ? 'Phone' : '手机号', 'phone', false, 'tel')}
         {field('Email', 'email', false, 'email')}
-        {field('微信名', 'wechat')}
+        {field(isEn ? 'WeChat' : '微信名', 'wechat')}
         {errors.phone && !form.phone && !form.email && !form.wechat && (
           <p className="text-xs text-red-500">{errors.phone}</p>
         )}
       </div>
 
       <p className="text-xs text-gray-400 text-center mt-4 mb-2">
-        如需改期或取消，请联系店铺
+        {isEn ? 'For reschedule or cancellation, please contact the store' : '如需改期或取消，请联系店铺'}
       </p>
 
       {/* Actions */}
@@ -134,7 +137,7 @@ export default function BookingForm({
           onClick={onBack}
           className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium min-h-[44px]"
         >
-          ← 返回
+          {isEn ? '← Back' : '← 返回'}
         </button>
         <button
           type="submit"
@@ -144,7 +147,7 @@ export default function BookingForm({
             isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
           )}
         >
-          {isSubmitting ? '提交中...' : '确认预约'}
+          {isSubmitting ? (isEn ? 'Submitting...' : '提交中...') : (isEn ? 'Confirm Booking' : '确认预约')}
         </button>
       </div>
     </form>

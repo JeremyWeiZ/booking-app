@@ -100,9 +100,9 @@ async function main() {
 
   // Default time blocks
   const defaultTimeBlocks = [
-    { id: 'tb-default-basic', staffId: defaultStaff.id, name: '基础护理', durationMins: 60, color: '#818cf8' },
-    { id: 'tb-default-deep', staffId: defaultStaff.id, name: '深度疗程', durationMins: 90, color: '#34d399' },
-    { id: 'tb-default-express', staffId: defaultStaff.id, name: '快速护理', durationMins: 30, color: '#fb923c' },
+    { id: 'tb-default-basic', staffId: defaultStaff.id, name: '基础护理', nameEn: 'Basic Care', durationMins: 60, color: '#818cf8' },
+    { id: 'tb-default-deep', staffId: defaultStaff.id, name: '深度疗程', nameEn: 'Deep Treatment', durationMins: 90, color: '#34d399' },
+    { id: 'tb-default-express', staffId: defaultStaff.id, name: '快速护理', nameEn: 'Express Care', durationMins: 30, color: '#fb923c' },
   ]
   for (const tb of defaultTimeBlocks) {
     await prisma.timeBlock.upsert({ where: { id: tb.id }, update: {}, create: tb })
@@ -180,11 +180,11 @@ async function main() {
 
   // Create time blocks
   const timeBlocks = [
-    { id: 'tb-basic', staffId: staff1.id, name: '基础护理', durationMins: 60, color: '#818cf8' },
-    { id: 'tb-deep', staffId: staff1.id, name: '深度疗程', durationMins: 90, color: '#34d399' },
-    { id: 'tb-express', staffId: staff1.id, name: '快速护理', durationMins: 30, color: '#fb923c' },
-    { id: 'tb2-basic', staffId: staff2.id, name: '基础护理', durationMins: 60, color: '#818cf8' },
-    { id: 'tb2-full', staffId: staff2.id, name: '全套疗程', durationMins: 120, color: '#f472b6' },
+    { id: 'tb-basic', staffId: staff1.id, name: '基础护理', nameEn: 'Basic Care', durationMins: 60, color: '#818cf8' },
+    { id: 'tb-deep', staffId: staff1.id, name: '深度疗程', nameEn: 'Deep Treatment', durationMins: 90, color: '#34d399' },
+    { id: 'tb-express', staffId: staff1.id, name: '快速护理', nameEn: 'Express Care', durationMins: 30, color: '#fb923c' },
+    { id: 'tb2-basic', staffId: staff2.id, name: '基础护理', nameEn: 'Basic Care', durationMins: 60, color: '#818cf8' },
+    { id: 'tb2-full', staffId: staff2.id, name: '全套疗程', nameEn: 'Full Package', durationMins: 120, color: '#f472b6' },
   ]
   for (const tb of timeBlocks) {
     await prisma.timeBlock.upsert({

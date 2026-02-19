@@ -7,6 +7,7 @@ import { z } from 'zod'
 const createSchema = z.object({
   staffId: z.string().min(1),
   name: z.string().min(1),
+  nameEn: z.string().optional(),
   durationMins: z.number().int().min(1),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   isActive: z.boolean().optional(),

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 export interface TimeBlockData {
   id: string
   name: string
+  nameEn?: string | null
   durationMins: number
   color: string
 }

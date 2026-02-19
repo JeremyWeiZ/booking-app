@@ -264,7 +264,7 @@ export default function LinksClient() {
           <div className="divide-y divide-gray-50">
             {tokens.map((t) => {
               const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-              const url = `${appUrl}/book?token=${t.token}&lang=zh`
+              const url = `${appUrl}/book?token=${t.token}`
               return (
                 <div key={t.id} className="px-5 py-3">
                   <div className="flex items-start justify-between gap-3">

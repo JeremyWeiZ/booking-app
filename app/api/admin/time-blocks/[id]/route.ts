@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
+  nameEn: z.string().optional(),
   durationMins: z.number().int().min(1).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   isActive: z.boolean().optional(),

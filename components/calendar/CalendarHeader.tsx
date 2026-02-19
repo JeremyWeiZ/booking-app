@@ -1,7 +1,7 @@
 'use client'
 
 import { format, addDays } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
 import { useState } from 'react'
 import MiniCalendar from './MiniCalendar'
 import { cn } from '@/lib/utils'
@@ -11,22 +11,30 @@ interface CalendarHeaderProps {
   onPrevWeek: () => void
   onNextWeek: () => void
   onSelectDate: (date: Date) => void
+  lang?: 'zh' | 'en'
 }
 
-const DAY_LABELS = ['一', '二', '三', '四', '五', '六', '日']
+const DAY_LABELS_ZH = ['一', '二', '三', '四', '五', '六', '日']
+const DAY_LABELS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export default function CalendarHeader({
   weekStart,
   onPrevWeek,
   onNextWeek,
   onSelectDate,
+  lang = 'zh',
 }: CalendarHeaderProps) {
+  const isEn = lang === 'en'
   const [showMiniCal, setShowMiniCal] = useState(false)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
   const weekEnd = addDays(weekStart, 6)
-  const headerLabel = `${format(weekStart, 'yyyy年 MMM dd', { locale: zhCN })} – ${format(weekEnd, 'dd日', { locale: zhCN })}`
+  const locale = isEn ? enUS : zhCN
+  const headerLabel = isEn
+    ? `${format(weekStart, 'MMM dd, yyyy', { locale })} - ${format(weekEnd, 'MMM dd', { locale })}`
+    : `${format(weekStart, 'yyyy年 MMM dd', { locale })} – ${format(weekEnd, 'dd日', { locale })}`
+  const dayLabels = isEn ? DAY_LABELS_EN : DAY_LABELS_ZH
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 
@@ -37,7 +45,7 @@ export default function CalendarHeader({
         <button
           onClick={onPrevWeek}
           className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
-          aria-label="上一周"
+          aria-label={isEn ? 'Previous week' : '上一周'}
         >
           ‹
         </button>
@@ -52,7 +60,7 @@ export default function CalendarHeader({
         <button
           onClick={onNextWeek}
           className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
-          aria-label="下一周"
+          aria-label={isEn ? 'Next week' : '下一周'}
         >
           ›
         </button>
@@ -68,7 +76,7 @@ export default function CalendarHeader({
               key={i}
               className="flex flex-col items-center py-1.5 text-xs"
             >
-              <span className="text-gray-500">{DAY_LABELS[i]}</span>
+              <span className="text-gray-500">{dayLabels[i]}</span>
               <span
                 className={cn(
                   'w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full font-medium mt-0.5',
@@ -88,6 +96,7 @@ export default function CalendarHeader({
       {showMiniCal && (
         <MiniCalendar
           selectedWeekStart={weekStart}
+          lang={lang}
           onSelectDate={(date) => {
             onSelectDate(date)
             setShowMiniCal(false)

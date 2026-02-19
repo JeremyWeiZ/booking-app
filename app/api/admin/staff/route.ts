@@ -67,7 +67,13 @@ export async function POST(req: NextRequest) {
   if (defaultStaff) {
     for (const tb of defaultStaff.timeBlocks.filter((t) => t.isActive)) {
       await prisma.timeBlock.create({
-        data: { staffId: staff.id, name: tb.name, durationMins: tb.durationMins, color: tb.color },
+        data: {
+          staffId: staff.id,
+          name: tb.name,
+          nameEn: tb.nameEn,
+          durationMins: tb.durationMins,
+          color: tb.color,
+        },
       })
     }
   }

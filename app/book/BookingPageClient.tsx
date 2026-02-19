@@ -148,7 +148,7 @@ export default function BookingPageClient() {
   const searchParams = useSearchParams()
   const tokenParam = searchParams.get('token')
   const langParam = searchParams.get('lang')
-  const lang = langParam === 'en' ? 'en' : 'zh'
+  const lang = langParam === 'zh' ? 'zh' : 'en'
   const isEn = lang === 'en'
 
   const [studio, setStudio] = useState<StudioData | null>(null)
@@ -390,13 +390,22 @@ export default function BookingPageClient() {
   }
 
   // Filtered time blocks: if token specifies a block, show only that one
+  const localizedBlocks = useMemo(
+    () =>
+      timeBlocks.map((b) => ({
+        ...b,
+        name: isEn && b.nameEn?.trim() ? b.nameEn : b.name,
+      })),
+    [timeBlocks, isEn]
+  )
+
   const displayedBlocks = useMemo(() => {
     if (prefillTimeBlockId) {
-      const found = timeBlocks.find((b) => b.id === prefillTimeBlockId)
-      return found ? [found] : timeBlocks
+      const found = localizedBlocks.find((b) => b.id === prefillTimeBlockId)
+      return found ? [found] : localizedBlocks
     }
-    return timeBlocks
-  }, [timeBlocks, prefillTimeBlockId])
+    return localizedBlocks
+  }, [localizedBlocks, prefillTimeBlockId])
 
   const getStartISO = () =>
     bookingState ? `${bookingState.date}T${bookingState.startTimeStr}:00` : ''
@@ -451,7 +460,7 @@ export default function BookingPageClient() {
           {studio?.logoUrl && (
             <img src={studio.logoUrl} alt="logo" className="h-8 w-8 rounded-lg object-cover" />
           )}
-          <h1 className="font-semibold text-gray-900 truncate">{studio?.name ?? '预约平台'}</h1>
+          <h1 className="font-semibold text-gray-900 truncate">{studio?.name ?? (isEn ? 'Booking Platform' : '预约平台')}</h1>
         </div>
         <div className="ml-auto flex items-center gap-3 text-[11px] whitespace-nowrap">
           <span className="text-gray-500">
@@ -515,6 +524,7 @@ export default function BookingPageClient() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <CalendarHeader
             weekStart={weekStart}
+            lang={lang}
             onPrevWeek={() => setWeekStart((w) => addDays(w, -7))}
             onNextWeek={() => setWeekStart((w) => addDays(w, 7))}
             onSelectDate={(date) => setWeekStart(startOfWeek(date, { weekStartsOn: 1 }))}
@@ -642,6 +652,7 @@ export default function BookingPageClient() {
               startTime={getStartISO()}
               endTime={getEndISO()}
               durationMins={bookingState.block.durationMins}
+              lang={lang}
               initialData={prefillData}
               onSubmit={handleFormSubmit}
               onBack={() => setStep('calendar')}

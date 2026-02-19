@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 interface TimeBlock {
   id: string
   name: string
+  nameEn: string | null
   durationMins: number
   color: string
   isActive: boolean
@@ -19,7 +20,7 @@ interface Staff {
   isDefault?: boolean
 }
 
-const DEFAULT_FORM = { name: '', durationMins: 60, color: '#818cf8', isActive: true }
+const DEFAULT_FORM = { name: '', nameEn: '', durationMins: 60, color: '#818cf8', isActive: true }
 
 export default function TimeBlocksClient() {
   const [allStaff, setAllStaff] = useState<Staff[]>([])
@@ -62,7 +63,13 @@ export default function TimeBlocksClient() {
 
   const openEdit = (block: TimeBlock) => {
     setEditingBlock(block)
-    setForm({ name: block.name, durationMins: block.durationMins, color: block.color, isActive: block.isActive })
+    setForm({
+      name: block.name,
+      nameEn: block.nameEn ?? '',
+      durationMins: block.durationMins,
+      color: block.color,
+      isActive: block.isActive,
+    })
     setShowForm(true)
   }
 
@@ -214,6 +221,7 @@ export default function TimeBlocksClient() {
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">名称</th>
+                <th className="text-left px-4 py-3 text-gray-500 font-medium">英文名称</th>
                 <th className="text-left px-4 py-3 text-gray-500 font-medium">时长</th>
                 <th className="text-left px-4 py-3 text-gray-500 font-medium">颜色</th>
                 <th className="text-left px-4 py-3 text-gray-500 font-medium">状态</th>
@@ -224,6 +232,7 @@ export default function TimeBlocksClient() {
               {blocks.map((block) => (
                 <tr key={block.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
                   <td className="px-5 py-3 font-medium text-gray-800">{block.name}</td>
+                  <td className="px-4 py-3 text-gray-600">{block.nameEn ?? '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{block.durationMins} min</td>
                   <td className="px-4 py-3">
                     <div
@@ -277,6 +286,16 @@ export default function TimeBlocksClient() {
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400"
                 placeholder="例：基础护理"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">英文名称</label>
+              <input
+                type="text"
+                value={form.nameEn}
+                onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value }))}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400"
+                placeholder="e.g. Basic Care"
               />
             </div>
             <div>

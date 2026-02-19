@@ -2,16 +2,19 @@
 
 import { useState } from 'react'
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameWeek, isToday } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 
 interface MiniCalendarProps {
   selectedWeekStart: Date
   onSelectDate: (date: Date) => void
   onClose: () => void
+  lang?: 'zh' | 'en'
 }
 
-export default function MiniCalendar({ selectedWeekStart, onSelectDate, onClose }: MiniCalendarProps) {
+export default function MiniCalendar({ selectedWeekStart, onSelectDate, onClose, lang = 'zh' }: MiniCalendarProps) {
+  const isEn = lang === 'en'
+  const locale = isEn ? enUS : zhCN
   const [viewMonth, setViewMonth] = useState(selectedWeekStart)
 
   const monthStart = startOfMonth(viewMonth)
@@ -35,7 +38,9 @@ export default function MiniCalendar({ selectedWeekStart, onSelectDate, onClose 
             ‹
           </button>
           <span className="text-sm font-semibold text-gray-800">
-            {format(viewMonth, 'yyyy年 MM月', { locale: zhCN })}
+            {isEn
+              ? format(viewMonth, 'MMMM yyyy', { locale })
+              : format(viewMonth, 'yyyy年 MM月', { locale })}
           </span>
           <button
             onClick={() => setViewMonth(addMonths(viewMonth, 1))}
@@ -47,7 +52,7 @@ export default function MiniCalendar({ selectedWeekStart, onSelectDate, onClose 
 
         {/* Day labels */}
         <div className="grid grid-cols-7 mb-1">
-          {['一', '二', '三', '四', '五', '六', '日'].map((d) => (
+          {(isEn ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['一', '二', '三', '四', '五', '六', '日']).map((d) => (
             <div key={d} className="text-center text-xs text-gray-400 py-1">{d}</div>
           ))}
         </div>
