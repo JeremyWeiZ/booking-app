@@ -12,6 +12,7 @@ const createSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   wechat: z.string().optional(),
   expiresAt: z.string().datetime().optional().nullable(),
+  lang: z.enum(['zh', 'en']).optional(),
 })
 
 export async function GET(req: NextRequest) {
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest) {
   const tokenRecord = await prisma.bookingToken.create({ data, include: { staff: true } })
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const bookingUrl = `${appUrl}/book?token=${tokenRecord.token}`
+  const lang = parsed.data.lang ?? 'zh'
+  const bookingUrl = `${appUrl}/book?token=${tokenRecord.token}&lang=${lang}`
 
   return NextResponse.json({ ...tokenRecord, bookingUrl }, { status: 201 })
 }

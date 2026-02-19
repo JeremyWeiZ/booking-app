@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   DndContext,
   DragEndEvent,
@@ -84,6 +84,7 @@ function QuarterCell({
   isBookedStart,
   isBookedEnd,
   showBookedLabel,
+  bookedLabel,
 }: {
   cellId: string
   slotType: SlotQuarter['slotType']
@@ -95,6 +96,7 @@ function QuarterCell({
   isBookedStart: boolean
   isBookedEnd: boolean
   showBookedLabel: boolean
+  bookedLabel: string
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: cellId,
@@ -133,7 +135,7 @@ function QuarterCell({
       )}
       {slotType === 'BOOKED' && showBookedLabel && (
         <span className="absolute left-1 top-0.5 text-[10px] text-gray-600 font-medium">
-          已约
+          {bookedLabel}
         </span>
       )}
     </div>
@@ -141,8 +143,13 @@ function QuarterCell({
 }
 
 export default function BookingPageClient() {
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const tokenParam = searchParams.get('token')
+  const langParam = searchParams.get('lang')
+  const lang = langParam === 'en' ? 'en' : 'zh'
+  const isEn = lang === 'en'
 
   const [studio, setStudio] = useState<StudioData | null>(null)
   const [staffList, setStaffList] = useState<StaffData[]>([])
@@ -353,19 +360,24 @@ export default function BookingPageClient() {
 
     if (res.status === 409) {
       const data = await res.json()
-      addToast(`⚠️ 时间冲突：该时段已被占用（${data.conflicting?.clientName}）`, 'error')
+      addToast(
+        isEn
+          ? `⚠️ Time conflict: this slot is occupied (${data.conflicting?.clientName})`
+          : `⚠️ 时间冲突：该时段已被占用（${data.conflicting?.clientName}）`,
+        'error'
+      )
       return
     }
 
     if (res.status === 422) {
       const data = await res.json()
-      addToast(data.error ?? '预约时间超出工作时间', 'error')
+      addToast(data.error ?? (isEn ? 'Selected time is outside working hours' : '预约时间超出工作时间'), 'error')
       return
     }
 
     if (!res.ok) {
       const data = await res.json()
-      addToast(data.error ?? '预约失败，请重试', 'error')
+      addToast(data.error ?? (isEn ? 'Booking failed, please try again' : '预约失败，请重试'), 'error')
       return
     }
 
@@ -406,8 +418,12 @@ export default function BookingPageClient() {
           </div>
         )}
         <h1 className="text-lg font-semibold text-gray-800">{studio?.name ?? 'Store Name'}</h1>
-        <p className="text-sm text-gray-600">你负责闪耀，我负责为你定制光芒。精致生活，从一副为你而做的美甲开始。</p>
-        <p className="text-sm text-gray-500">加载中，请稍后</p>
+        <p className="text-sm text-gray-600">
+          {isEn
+            ? 'You shine; we tailor your glow. A refined life starts with a manicure made for you.'
+            : '你负责闪耀，我负责为你定制光芒。精致生活，从一副为你而做的美甲开始。'}
+        </p>
+        <p className="text-sm text-gray-500">{isEn ? 'Loading, please wait' : '加载中，请稍后'}</p>
       </div>
     )
   }
@@ -415,6 +431,12 @@ export default function BookingPageClient() {
   const trayHeight = displayedBlocks.length > 0
     ? Math.max(...displayedBlocks.map((b) => getTrayTileHeightPx(b.durationMins))) + 56
     : 80
+
+  const handleLangChange = (nextLang: 'zh' | 'en') => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('lang', nextLang)
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }
 
   return (
     <div
@@ -431,17 +453,41 @@ export default function BookingPageClient() {
           )}
           <h1 className="font-semibold text-gray-900 truncate">{studio?.name ?? '预约平台'}</h1>
         </div>
-        <div className="ml-auto text-[11px] text-gray-500 whitespace-nowrap">
-          由{' '}
-          <a
-            href="https://www.jwsoft.com.au"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
-          >
-            JW Soft
-          </a>{' '}
-          提供服务
+        <div className="ml-auto flex items-center gap-3 text-[11px] whitespace-nowrap">
+          <span className="text-gray-500">
+            {isEn ? 'Powered by ' : '由 '}
+            <a
+              href="https://www.jwsoft.com.au"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
+            >
+              JW Soft
+            </a>
+            {isEn ? '' : ' 提供服务'}
+          </span>
+          <div className="inline-flex rounded-md border border-gray-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => handleLangChange('zh')}
+              className={cn(
+                'px-2 py-0.5 text-[11px]',
+                !isEn ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600'
+              )}
+            >
+              中
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLangChange('en')}
+              className={cn(
+                'px-2 py-0.5 text-[11px] border-l border-gray-200',
+                isEn ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600'
+              )}
+            >
+              EN
+            </button>
+          </div>
         </div>
       </div>
 
@@ -487,7 +533,7 @@ export default function BookingPageClient() {
 
             {draggingBlock && (
               <div className="sticky top-0 z-20 bg-indigo-600 text-white text-sm text-center py-2 font-medium">
-                拖入日历格子以选择时间段
+                {isEn ? 'Drag onto the calendar to choose time' : '拖入日历格子以选择时间段'}
               </div>
             )}
 
@@ -551,6 +597,7 @@ export default function BookingPageClient() {
                               isBookedStart={isBookedStart}
                               isBookedEnd={isBookedEnd}
                               showBookedLabel={isBookedStart}
+                              bookedLabel={isEn ? 'Booked' : '已约'}
                             />
                           )
                         }
@@ -587,7 +634,7 @@ export default function BookingPageClient() {
 
       {/* Booking form sheet */}
       {bookingState && step === 'form' && (
-        <BottomSheet isOpen onClose={() => setStep('calendar')} title="预约确认">
+        <BottomSheet isOpen onClose={() => setStep('calendar')} title={isEn ? 'Booking Confirmation' : '预约确认'}>
           <div className="px-4 py-2">
             <BookingForm
               staffName={bookingState.staffName}
@@ -608,9 +655,13 @@ export default function BookingPageClient() {
       <BottomSheet isOpen={step === 'success'} onClose={() => setStep('calendar')} title="">
         <div className="flex flex-col items-center px-6 py-8 text-center">
           <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">预约成功！</h2>
-          <p className="text-sm text-gray-500 mb-6">您的预约已确认，期待您的到来</p>
-          <button onClick={() => setStep('calendar')} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium">完成</button>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{isEn ? 'Booking Confirmed!' : '预约成功！'}</h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {isEn ? 'Your booking is confirmed. We look forward to seeing you.' : '您的预约已确认，期待您的到来'}
+          </p>
+          <button onClick={() => setStep('calendar')} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium">
+            {isEn ? 'Done' : '完成'}
+          </button>
         </div>
       </BottomSheet>
 
@@ -618,9 +669,13 @@ export default function BookingPageClient() {
       <BottomSheet isOpen={step === 'pending'} onClose={() => setStep('calendar')} title="">
         <div className="flex flex-col items-center px-6 py-8 text-center">
           <div className="text-5xl mb-4">🕐</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">预约申请已提交</h2>
-          <p className="text-sm text-gray-500 mb-6">等待商家确认，请保持联系方式畅通</p>
-          <button onClick={() => setStep('calendar')} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium">完成</button>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{isEn ? 'Request Submitted' : '预约申请已提交'}</h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {isEn ? 'Waiting for confirmation. Please keep your contact available.' : '等待商家确认，请保持联系方式畅通'}
+          </p>
+          <button onClick={() => setStep('calendar')} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium">
+            {isEn ? 'Done' : '完成'}
+          </button>
         </div>
       </BottomSheet>
     </div>

@@ -48,6 +48,7 @@ export default function LinksClient() {
     email: '',
     wechat: '',
     expiryDays: null as number | null,
+    lang: 'zh' as 'zh' | 'en',
   })
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -97,6 +98,7 @@ export default function LinksClient() {
         email: form.email || undefined,
         wechat: form.wechat || undefined,
         expiresAt,
+        lang: form.lang,
       }),
     })
 
@@ -177,6 +179,34 @@ export default function LinksClient() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">链接语言</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, lang: 'zh' }))}
+                className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                  form.lang === 'zh'
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'border-gray-200 text-gray-700 hover:border-indigo-300'
+                }`}
+              >
+                中文
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, lang: 'en' }))}
+                className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                  form.lang === 'en'
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'border-gray-200 text-gray-700 hover:border-indigo-300'
+                }`}
+              >
+                English
+              </button>
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">链接有效期</label>
             <div className="flex gap-2 flex-wrap">
               {EXPIRY_OPTIONS.map((opt) => (
@@ -234,7 +264,7 @@ export default function LinksClient() {
           <div className="divide-y divide-gray-50">
             {tokens.map((t) => {
               const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-              const url = `${appUrl}/book?token=${t.token}`
+              const url = `${appUrl}/book?token=${t.token}&lang=zh`
               return (
                 <div key={t.id} className="px-5 py-3">
                   <div className="flex items-start justify-between gap-3">
